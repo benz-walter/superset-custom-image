@@ -1,0 +1,19 @@
+diff --git "a/superset/superset/db_engine_specs/trino.py" "b/superset/superset/db_engine_specs/trino.py"
+index 1e902e7f3..9be6db5ff 100644
+--- "a/superset/superset/db_engine_specs/trino.py"
++++ "b/superset/superset/db_engine_specs/trino.py"
+@@ -445,6 +445,13 @@ class TrinoEngineSpec(PrestoBaseEngineSpec):
+         :returns: The indexes
+         """
+         try:
+-            return super().get_indexes(database, inspector, table_name, schema)
++            indexes = super().get_indexes(database, inspector, table_name, schema)
++            # Handle iceberg tables. Even for non-partitioned tables, it returns a value
++            iceberg_cols_ignore = {"record_count", "file_count", "total_size", "data"}
++            if len(indexes) == 1 and indexes[0].get(
++                "name") == "partition" and iceberg_cols_ignore.issubset(
++                set(indexes[0].get("column_names", []))):
++                return []
++            return indexes
+         except NoSuchTableError:
+             return []
