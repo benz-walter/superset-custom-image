@@ -106,4 +106,6 @@ dist
 .idea/
 
 # build
+esm
 lib
+node_modules

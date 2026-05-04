@@ -27,22 +27,6 @@ RUN curl \
 # Copy and extract the custom visualization plugins to /app/plugins
 WORKDIR /app/plugins
 COPY plugins/ .
-# RUN find -name \*.tar.gz -exec tar --extract --gunzip --file={} \;
-
-## Not needed right now. Leaving mechanism for maybe later use.
-## Implementation of the OIDC Security manager can and will be done via configs in
-## https://gitlab.com/smartcityfreiburg/plattform-apps/superset/-/blob/main/manifests/misc/superset.yaml
-
-# Copy patch for Superset-Logout
-#COPY 001-superset_logout.patch /app/001-superset_logout.patch
-# Apply patch to copy later into final image
-#WORKDIR /app
-#RUN git apply 001-superset_logout.patch
-
-
-#Patch for UD-721
-WORKDIR /app/superset/superset/db_engine_specs
-COPY ./replacementFiles/trino.py ./trino.py
 
 # Register the plugins in Superset by patching MainPreset.js
 WORKDIR /app/superset/superset-frontend
@@ -51,8 +35,13 @@ COPY index.tsx packages/superset-ui-core/src/style/index.tsx
 COPY webpack.config.js .
 
 # Build Superset with the plugins
-RUN npm install --save html2canvas global-box react-spring @react-spring/web currencyformatter.js && npm install -S --legacy-peer-deps  --prefer-offline --no-audit --loglevel=verbose ../../plugins/* \
-    && npm run build 
+RUN npm install --save html2canvas global-box react-spring @react-spring/web currencyformatter.js
+RUN for dir in /app/plugins/*; do \
+        echo "Running npm ci in $dir"; \
+        (cd "$dir" && npm ci --legacy-peer-deps && npm run build || exit 1); \
+    done
+RUN npm install -S --legacy-peer-deps --prefer-offline --no-audit --loglevel=verbose /app/plugins/*
+RUN npm run build
 
 # ===========
 # Final image
@@ -70,6 +59,6 @@ COPY --from=builder --chown=stackable:stackable \
     /stackable/app/lib/python${PYTHON_VERSION}/site-packages/superset/static/assets
 
 #Patch for UD-721
-COPY --from=builder --chown=stackable:stackable \
-    /app/superset/superset/db_engine_specs/trino.py \
+COPY --chown=stackable:stackable \
+    ./replacementFiles/trino.py \
     /stackable/app/lib/python${PYTHON_VERSION}/site-packages/superset/db_engine_specs/trino.py

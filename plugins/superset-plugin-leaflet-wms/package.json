@@ -11,13 +11,11 @@
   ],
   "private": true,
   "scripts": {
-    "build": "npm run build-cjs && npm run build-esm && npm run ts-types",
+    "build": "npm run build-esm",
     "build-cjs": "babel src --extensions \".ts,.tsx,.js,.jsx\" --copy-files --out-dir lib",
-    "build-clean": "npm run clean && npm run build",
     "build-esm": "BABEL_OUTPUT=esm babel src --extensions \".ts,.tsx,.js,.jsx\" --copy-files --out-dir esm",
     "dev": "BABEL_OUTPUT=esm babel src --extensions \".ts,.tsx,.js,.jsx\" --watch --copy-files --out-dir esm",
     "prebuild": "rimraf {lib,esm,tsconfig.tsbuildinfo}",
-    "postbuild": "npm run test",
     "ts-types": "tsc --build",
     "test": "jest"
   },
@@ -35,12 +33,12 @@
     "prop-types": "^15.8.1",
     "react": "^16.13.1",
     "react-leaflet": "^3.1.0",
-    "styled-components": "^6.1.13"
+    "styled-components": "^6.1.13",
+    "react-dom": "^16.13.1"
   },
   "peerDependencies": {
     "@superset-ui/chart-controls": "^1.5.0",
-    "@superset-ui/core": "^1.5.0",
-    "react-dom": "^16.13.1"
+    "@superset-ui/core": "^1.5.0"
   },
   "devDependencies": {
     "@airbnb/config-babel": "^3.1.0",

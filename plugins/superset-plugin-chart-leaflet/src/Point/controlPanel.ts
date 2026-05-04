@@ -669,19 +669,9 @@ const config: ControlPanelConfig = {
             ],
         },
     ],
-    controlOverrides: {
-        colorMetric: {
-          label: t('Column'),
-          validators: [],
-          description: t(
-            '[optional] Metrics used to define tooltips and colors',
-          ),
-        },
-    },
-  formDataOverrides: formData => ({
-    ...formData,
-    color_metric: getStandardizedControls().shiftMetric(),
-  }),
-
+    formDataOverrides: formData => ({
+        ...formData,
+        color_metric: getStandardizedControls().shiftMetric(),
+    }),
 };
 export default config;
