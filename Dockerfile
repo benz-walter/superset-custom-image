@@ -51,6 +51,9 @@ FROM oci.stackable.tech/sdp/superset:${SUPERSET_VERSION}-stackable${STACKABLE_VE
 
 ARG PYTHON_VERSION=3.9
 
+# Additional plugins
+RUN pip install --no-deps --no-cache flask_cors # missing dependency of apache-superset[cors]
+
 # Replace the Superset frontend with the one containing the plugins
 RUN rm --recursive \
     /stackable/app/lib/python${PYTHON_VERSION}/site-packages/superset/static/assets
