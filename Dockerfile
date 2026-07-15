@@ -1,6 +1,6 @@
 ARG SUPERSET_VERSION=4.1.4
 # HINT: Do not use dev versions except for testing
-ARG STACKABLE_VERSION=25.11.0
+ARG STACKABLE_VERSION=26.3.0
 # Use the Node version which is used upstream for the given Superset version
 ARG NODE_IMAGE=node:20@sha256:8f693eaa7e0a8e71560c9a82b55fd54c2ae920a2ba5d2cde28bac7d1c01c9ba5
 
