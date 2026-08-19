@@ -1,15 +1,18 @@
-ARG SUPERSET_VERSION=4.1.4
+ARG SUPERSET_VERSION=6.1.0
 # HINT: Do not use dev versions except for testing
 ARG STACKABLE_VERSION=26.7.0
 # Use the Node version which is used upstream for the given Superset version
-ARG NODE_IMAGE=node:20@sha256:8f693eaa7e0a8e71560c9a82b55fd54c2ae920a2ba5d2cde28bac7d1c01c9ba5
+ARG NODE_IMAGE=node:24.19@sha256:934240a162082fd8b8a2f90cd5114446443f1eba1c5378f6687167ca405e6584
 
 # ===========
 # Build stage
 # ===========
 
 FROM ${NODE_IMAGE} AS builder
-
+# System-Abhängigkeiten wie zstd für simple-zstd / webpack installieren
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    zstd \
+    && rm -rf /var/lib/apt/lists/*
 # ARGs only last for the build phase of a single image. For the multistage, renew the ARG
 ARG SUPERSET_VERSION
 
@@ -24,23 +27,15 @@ RUN curl \
     # clean up sources
     && rm -rf superset.tar.gz
 
-# Copy and extract the custom visualization plugins to /app/plugins
-WORKDIR /app/plugins
-COPY plugins/ .
-
 # Register the plugins in Superset by patching MainPreset.js
+WORKDIR /app/superset/superset-frontend/plugins
+COPY plugins/ .
 WORKDIR /app/superset/superset-frontend
-COPY MainPreset.js src/visualizations/presets/MainPreset.js
-COPY index.tsx packages/superset-ui-core/src/style/index.tsx
-COPY webpack.config.js .
+COPY MainPreset.ts src/visualizations/presets/MainPreset.ts
+COPY VizType.ts packages/superset-ui-core/src/chart/types/VizType.ts
 
 # Build Superset with the plugins
-RUN npm install --save html2canvas global-box react-spring @react-spring/web currencyformatter.js
-RUN for dir in /app/plugins/*; do \
-        echo "Running npm ci in $dir"; \
-        (cd "$dir" && npm ci --legacy-peer-deps && npm run build || exit 1); \
-    done
-RUN npm install -S --legacy-peer-deps --prefer-offline --no-audit --loglevel=verbose /app/plugins/*
+RUN npm install
 RUN npm run build
 
 # ===========
@@ -49,7 +44,7 @@ RUN npm run build
 
 FROM oci.stackable.tech/sdp/superset:${SUPERSET_VERSION}-stackable${STACKABLE_VERSION}
 
-ARG PYTHON_VERSION=3.11
+ARG PYTHON_VERSION=3.12
 
 # Additional plugins
 RUN pip install --no-deps --no-cache flask_cors # missing dependency of apache-superset[cors]
@@ -60,8 +55,3 @@ RUN rm --recursive \
 COPY --from=builder --chown=stackable:stackable \
     /app/superset/superset/static/assets \
     /stackable/app/lib/python${PYTHON_VERSION}/site-packages/superset/static/assets
-
-#Patch for UD-721
-COPY --chown=stackable:stackable \
-    ./replacementFiles/trino.py \
-    /stackable/app/lib/python${PYTHON_VERSION}/site-packages/superset/db_engine_specs/trino.py
