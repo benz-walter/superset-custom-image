@@ -22,18 +22,25 @@ import {
   Preset,
   VizType,
 } from '@superset-ui/core';
-import CalendarChartPlugin from '@superset-ui/plugin-chart-calendar';
-import ChordChartPlugin from '@superset-ui/plugin-chart-chord';
-import CountryMapChartPlugin from '@superset-ui/plugin-chart-country-map';
-import HorizonChartPlugin from '@superset-ui/plugin-chart-horizon';
-import PairedTTestChartPlugin from '@superset-ui/plugin-chart-paired-t-test';
-import ParallelCoordinatesChartPlugin from '@superset-ui/plugin-chart-parallel-coordinates';
-import PartitionChartPlugin from '@superset-ui/plugin-chart-partition';
+import CalendarChartPlugin from '@superset-ui/legacy-plugin-chart-calendar';
+import ChordChartPlugin from '@superset-ui/legacy-plugin-chart-chord';
+import CountryMapChartPlugin from '@superset-ui/legacy-plugin-chart-country-map';
+import HorizonChartPlugin from '@superset-ui/legacy-plugin-chart-horizon';
+import MapBoxChartPlugin from '@superset-ui/legacy-plugin-chart-map-box';
+import PairedTTestChartPlugin from '@superset-ui/legacy-plugin-chart-paired-t-test';
+import ParallelCoordinatesChartPlugin from '@superset-ui/legacy-plugin-chart-parallel-coordinates';
+import PartitionChartPlugin from '@superset-ui/legacy-plugin-chart-partition';
+import RoseChartPlugin from '@superset-ui/legacy-plugin-chart-rose';
 import TableChartPlugin from '@superset-ui/plugin-chart-table';
 import { WordCloudChartPlugin } from '@superset-ui/plugin-chart-word-cloud';
-import WorldMapChartPlugin from '@superset-ui/plugin-chart-world-map';
-import { DeckGLChartPreset } from '@superset-ui/preset-chart-deckgl';
-import ScatterMapChartPlugin from '@superset-ui/plugin-chart-point-cluster-map';
+import WorldMapChartPlugin from '@superset-ui/legacy-plugin-chart-world-map';
+import {
+  BubbleChartPlugin,
+  BulletChartPlugin,
+  CompareChartPlugin,
+  TimePivotChartPlugin,
+} from '@superset-ui/legacy-preset-chart-nvd3';
+import { DeckGLChartPreset } from '@superset-ui/legacy-preset-chart-deckgl';
 import { CartodiagramPlugin } from '@superset-ui/plugin-chart-cartodiagram';
 import {
   BigNumberChartPlugin,
@@ -62,9 +69,6 @@ import {
   BigNumberPeriodOverPeriodChartPlugin,
   EchartsHeatmapChartPlugin,
   EchartsGanttChartPlugin,
-  EchartsRoseChartPlugin,
-  EchartsTimePivotChartPlugin,
-  EchartsBulletChartPlugin,
 } from '@superset-ui/plugin-chart-echarts';
 import {
   SelectFilterPlugin,
@@ -84,7 +88,6 @@ import { HandlebarsChartPlugin } from '@superset-ui/plugin-chart-handlebars';
 import { ChartCustomizationPlugins, FilterPlugins } from 'src/constants';
 import AgGridTableChartPlugin from '@superset-ui/plugin-chart-ag-grid-table';
 import TimeTableChartPlugin from '../TimeTable';
-
 import LeafletWMSChart from '../../../plugins/plugin-leaflet-wms/src/plugin';
 import SupersetPluginOccupancySpots from '../../../plugins/plugin-occupancy-spots/src/plugin';
 import SupersetPluginChartCompare from '../../../plugins/plugin-chart-compare/src/plugin';
@@ -99,18 +102,18 @@ import {
 export default class MainPreset extends Preset {
   constructor() {
     const experimentalPlugins = isFeatureEnabled(
-      FeatureFlag.ChartPluginsExperimental,
+        FeatureFlag.ChartPluginsExperimental,
     )
-      ? [
+        ? [
           new BigNumberPeriodOverPeriodChartPlugin().configure({
             key: VizType.BigNumberPeriodOverPeriod,
           }),
         ]
-      : [];
+        : [];
 
     const agGridTablePlugin = isFeatureEnabled(FeatureFlag.AgGridTableEnabled)
-      ? [new AgGridTableChartPlugin().configure({ key: VizType.TableAgGrid })]
-      : [];
+        ? [new AgGridTableChartPlugin().configure({ key: VizType.TableAgGrid })]
+        : [];
 
     super({
       name: 'Legacy charts',
@@ -121,9 +124,11 @@ export default class MainPreset extends Preset {
           key: VizType.BigNumberTotal,
         }),
         new EchartsBoxPlotChartPlugin().configure({ key: VizType.BoxPlot }),
-        new EchartsBulletChartPlugin().configure({ key: VizType.Bullet }),
+        new BubbleChartPlugin().configure({ key: VizType.LegacyBubble }),
+        new BulletChartPlugin().configure({ key: VizType.Bullet }),
         new CalendarChartPlugin().configure({ key: VizType.Calendar }),
         new ChordChartPlugin().configure({ key: VizType.Chord }),
+        new CompareChartPlugin().configure({ key: VizType.Compare }),
         new CountryMapChartPlugin().configure({ key: VizType.CountryMap }),
         new EchartsFunnelChartPlugin().configure({ key: VizType.Funnel }),
         new EchartsSankeyChartPlugin().configure({ key: VizType.Sankey }),
@@ -136,7 +141,7 @@ export default class MainPreset extends Preset {
           key: VizType.MixedTimeseries,
         }),
         new HorizonChartPlugin().configure({ key: VizType.Horizon }),
-        new ScatterMapChartPlugin().configure({ key: VizType.PointClusterMap }),
+        new MapBoxChartPlugin().configure({ key: VizType.MapBox }),
         new PairedTTestChartPlugin().configure({ key: VizType.PairedTTest }),
         new ParallelCoordinatesChartPlugin().configure({
           key: VizType.ParallelCoordinates,
@@ -144,9 +149,9 @@ export default class MainPreset extends Preset {
         new PartitionChartPlugin().configure({ key: VizType.Partition }),
         new EchartsPieChartPlugin().configure({ key: VizType.Pie }),
         new PivotTableChartPluginV2().configure({ key: VizType.PivotTable }),
-        new EchartsRoseChartPlugin().configure({ key: VizType.Rose }),
+        new RoseChartPlugin().configure({ key: VizType.Rose }),
         new TableChartPlugin().configure({ key: VizType.Table }),
-        new EchartsTimePivotChartPlugin().configure({ key: VizType.TimePivot }),
+        new TimePivotChartPlugin().configure({ key: VizType.TimePivot }),
         new TimeTableChartPlugin().configure({ key: VizType.TimeTable }),
         new WordCloudChartPlugin().configure({ key: VizType.WordCloud }),
         new WorldMapChartPlugin().configure({ key: VizType.WorldMap }),
@@ -210,7 +215,7 @@ export default class MainPreset extends Preset {
               layersParam: 'OSM-WMS',
               title: 'OpenStreetMap',
               attribution:
-                '© Map data from <a href="openstreetmap.org/copyright">OpenStreetMap</a>. Service provided by <a href="https://www.terrestris.de">terrestris GmbH & Co. KG</a>',
+                  '© Map data from <a href="openstreetmap.org/copyright">OpenStreetMap</a>. Service provided by <a href="https://www.terrestris.de">terrestris GmbH & Co. KG</a>',
             },
           ],
         }).configure({ key: VizType.Cartodiagram }),

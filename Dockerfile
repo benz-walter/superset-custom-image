@@ -9,7 +9,10 @@ ARG NODE_IMAGE=node:24.19@sha256:934240a162082fd8b8a2f90cd5114446443f1eba1c5378f
 # ===========
 
 FROM ${NODE_IMAGE} AS builder
-
+# System-Abhängigkeiten wie zstd für simple-zstd / webpack installieren
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    zstd \
+    && rm -rf /var/lib/apt/lists/*
 # ARGs only last for the build phase of a single image. For the multistage, renew the ARG
 ARG SUPERSET_VERSION
 
@@ -32,7 +35,7 @@ COPY MainPreset.ts src/visualizations/presets/MainPreset.ts
 COPY VizType.ts packages/superset-ui-core/src/chart/types/VizType.ts
 
 # Build Superset with the plugins
-RUN npm install --legacy-peer-deps
+RUN npm install
 RUN npm run build
 
 # ===========

@@ -48,7 +48,6 @@ export enum VizType {
   LegacyBubble = 'bubble',
   Line = 'echarts_timeseries_line',
   MapBox = 'mapbox',
-  PointClusterMap = 'point_cluster_map',
   MixedTimeseries = 'mixed_timeseries',
   OccupancySpots = 'occupancy_spots',
   PairedTTest = 'paired_ttest',

@@ -27,7 +27,7 @@
     "access": "public"
   },
   "dependencies": {
-    "react": "^18.3.0"
+    "react": "^17.0.2"
   },
   "peerDependencies": {
     "@superset-ui/chart-controls": "*",
