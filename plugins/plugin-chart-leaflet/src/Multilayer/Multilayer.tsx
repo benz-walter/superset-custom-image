@@ -4,11 +4,11 @@ import {TileLayer, MapContainer, WMSTileLayer} from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import {Styles} from "../utils/style";
 import {
-    adjustViewport,
-    createColorSetup,
-    createLegend,
-    LayerMapWrapper,
-    LayerWrapper
+  ChangeView,
+  createColorSetup,
+  createLegend,
+  LayerMapWrapper,
+  LayerWrapper
 } from "../utils/common";
 import {renderGeoJSON as polygonJson} from "../Polygon/Polygon";
 import {renderGeoJSON as pointJson} from "../Point/Point";
@@ -110,9 +110,6 @@ function MapWithGeoJSON(props: SupersetPluginChartLeafletProps) {
                 totalGeo = [...totalGeo, ...geoData];
             }
         });
-        if (mapRef.current && totalGeo.length > 0) {
-            adjustViewport(mapRef, totalGeo);
-        }
     }, [chartData]);
 
     const getLayers = () => {
@@ -175,6 +172,7 @@ function MapWithGeoJSON(props: SupersetPluginChartLeafletProps) {
                 <LayerMapWrapper>
                     <MapContainer ref={mapRef} center={[0, 0]} zoom={10} maxZoom={20}
                                   style={{width: "100%", height: "100%", zIndex: 1}}>
+                        <ChangeView geoData={chartData} />
                         <TileLayer url={formData.tileStyle} maxZoom={20}/>
                         {formData.wmsUrl && (
                             <WMSTileLayer

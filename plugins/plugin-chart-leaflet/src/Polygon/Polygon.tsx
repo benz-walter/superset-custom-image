@@ -7,7 +7,7 @@ import 'leaflet/dist/leaflet.css';
 import {Styles} from "../utils/style";
 import { TimeseriesDataRecord } from '@superset-ui/core';
 import {
-    adjustViewport,
+  ChangeView,
     createColorSetup, createLegend, createToolTipData,
     LegendWrapper,
     mapPointTooltip,
@@ -67,13 +67,7 @@ function MapWithGeoJSON(props: SupersetPluginChartLeafletProps) {
     useEffect(() => {
         let tempColorSetup = createColorSetup(formData, data, colTypes, colNames)
         setColorSetup(tempColorSetup)
-    }, [data, formData]);
-
-    useEffect(() => {
-        if (mapRef.current && geoData) {
-            adjustViewport(mapRef, geoData);
-        }
-    }, [geoData]);
+    }, [data, formData])
 
 
     return (
@@ -82,6 +76,7 @@ function MapWithGeoJSON(props: SupersetPluginChartLeafletProps) {
                 <MapWrapper>
                     <MapContainer ref={mapRef} center={[0, 0]} zoom={10} maxZoom={20}
                                   style={{width: "100%", height: "100%", zIndex: 1}}>
+                        <ChangeView geoData={geoData} />
                         <TileLayer url={formData.tileStyle} maxZoom={20}/>
                         {formData.wmsUrl && (
                             <WMSTileLayer

@@ -3,14 +3,26 @@ import chroma from 'chroma-js';
 import styled from "styled-components";
 import {Legend} from "./legend";
 import { ColorSetup } from "../types";
+import { useMap } from 'react-leaflet';
+import {useEffect} from 'react';
 
+export function ChangeView({ geoData }: { geoData: any }) {
+  const map = useMap();
+  useEffect(() => {
+    if (map && geoData && geoData.length > 0) {
+      try {
+        const bounds = L.geoJSON(geoData).getBounds();
+        if (bounds.isValid()) {
+          map.fitBounds(bounds);
+        }
+      } catch (e) {
+        console.error('Failed to fit bounds:', e);
+      }
+    }
+  }, [geoData, map]);
 
-export function adjustViewport(mapRef: any, geojsonData: any) {
-    if (geojsonData == null || !mapRef.current) return [0, 0];
-    mapRef.current.fitBounds(L.geoJSON(geojsonData).getBounds());
-    return;
+  return null;
 }
-
 
 export function rgbToHex(red: number, green: number, blue: number) {
     const rgb = (red << 16) | (green << 8) | (blue << 0);
