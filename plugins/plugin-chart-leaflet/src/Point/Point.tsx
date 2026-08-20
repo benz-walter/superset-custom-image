@@ -8,16 +8,16 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import {Styles} from "../utils/style";
 import {
-    adjustViewport,
-    createColorSetup,
-    createLegend, createToolTipData,
-    getColor,
-    getRadius,
-    LegendWrapper,
-    mapPointTooltip,
-    MapWrapper,
-    rgbToHex,
-    Wrapper
+  ChangeView,
+  createColorSetup,
+  createLegend, createToolTipData,
+  getColor,
+  getRadius,
+  LegendWrapper,
+  mapPointTooltip,
+  MapWrapper,
+  rgbToHex,
+  Wrapper
 } from "../utils/common";
 
 export const renderGeoJSON = (
@@ -111,12 +111,6 @@ function MapWithGeoJSON(props: SupersetPluginChartLeafletProps) {
         setColorSetup(tempColorSetup)
     }, [data, formData]);
 
-    useEffect(() => {
-        if (mapRef.current && geoData) {
-            adjustViewport(mapRef, geoData);
-        }
-    }, [geoData]);
-
 
     return (
         <Styles>
@@ -124,6 +118,7 @@ function MapWithGeoJSON(props: SupersetPluginChartLeafletProps) {
                 <MapWrapper>
                     <MapContainer ref={mapRef} center={[0, 0]} zoom={10} maxZoom={20}
                                   style={{width: "100%", height: "100%", zIndex: 1}}>
+                        <ChangeView geoData={geoData} />
                         <TileLayer url={formData.tileStyle} maxZoom={20}/>
                         {formData.wmsUrl && (
                             <WMSTileLayer
