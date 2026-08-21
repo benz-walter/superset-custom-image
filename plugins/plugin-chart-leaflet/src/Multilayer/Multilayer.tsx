@@ -172,7 +172,10 @@ function MapWithGeoJSON(props: SupersetPluginChartLeafletProps) {
                 <LayerMapWrapper>
                     <MapContainer ref={mapRef} center={[0, 0]} zoom={10} maxZoom={20}
                                   style={{width: "100%", height: "100%", zIndex: 1}}>
-                        <ChangeView geoData={chartData} />
+                        {chartData && <ChangeView geoData={chartData[sliceIDOrder[0]]?.result?.[0]?.data.map((d: any) => {
+                            const geom = d[JSON.parse(chartSetup[sliceIDOrder[0]]?.result?.params)['geometry']];
+                            return typeof geom === 'string' ? JSON.parse(geom) : geom;
+                        })}/>}
                         <TileLayer url={formData.tileStyle} maxZoom={20}/>
                         {formData.wmsUrl && (
                             <WMSTileLayer
