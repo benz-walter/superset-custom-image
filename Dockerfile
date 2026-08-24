@@ -33,6 +33,7 @@ COPY plugins/ .
 WORKDIR /app/superset/superset-frontend
 COPY MainPreset.ts src/visualizations/presets/MainPreset.ts
 COPY VizType.ts packages/superset-ui-core/src/chart/types/VizType.ts
+COPY SliceHeader/index.tsx src/dashboard/components/SliceHeader/index.tsx
 
 # Build Superset with the plugins
 RUN npm install
