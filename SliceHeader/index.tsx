@@ -278,14 +278,23 @@ const SliceHeader = forwardRef<HTMLDivElement, SliceHeaderProps>(
         renderLink={
             canExplore && exploreUrl ? renderExploreLink : undefined
     }
+        extra={
+            slice.description && (
+                <AntdTooltip
+                    title={slice.description}
+                >
+                    <InfoCircleOutlined
+                        css={css`
+                            margin-left: ${theme.sizeUnit}px;
+                            cursor: pointer;
+                        `}
+                    />
+                </AntdTooltip>
+            )
+        }
         />
         </div>
         </Tooltip>
-        {slice.description && <AntdTooltip
-            title={slice.description}>
-            <InfoCircleOutlined />
-            </AntdTooltip>
-        }
         {!!Object.values(annotationQuery).length && (
             <Tooltip
                 id="annotations-loading-tooltip"
