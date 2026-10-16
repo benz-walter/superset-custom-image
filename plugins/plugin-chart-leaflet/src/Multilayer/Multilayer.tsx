@@ -130,23 +130,35 @@ function MapWithGeoJSON(props: SupersetPluginChartLeafletProps) {
         const layers: any[] = []
 
         sliceIDOrder.forEach(slice_id => {
-            const data = SETUP.chartData[slice_id];  // Daten für das aktuelle Chart
+            const rawData = SETUP.chartData[slice_id];  // Daten für das aktuelle Chart
             const fd = SETUP.chartParams[slice_id];  // Params für das aktuelle Chart
-            if (data && fd) {
-                const colorSetup = createColorSetup(SETUP.chartParams[slice_id], SETUP.chartData[slice_id], SETUP.colTypes[slice_id], SETUP.colNames[slice_id]);
-                SETUP.colSetup[slice_id] = colorSetup
-                const geoData = data.map((d: any) => {
-                    const geom = d[fd['geometry'] as string];
-                    return typeof geom === 'string' ? JSON.parse(geom) : geom;
+            if (rawData && fd && fd['geometry']) {
+                const validGeo: any[] = [];
+                const validData: any[] = [];
+                rawData.forEach((d: any) => {
+                    if (!d) return;
+                    const geomRaw = d[fd['geometry'] as string];
+                    if (geomRaw === null || geomRaw === undefined) return;
+                    try {
+                        const geom = typeof geomRaw === 'string' ? JSON.parse(geomRaw) : geomRaw;
+                        if (geom) {
+                            validGeo.push(geom);
+                            validData.push(d);
+                        }
+                    } catch (e) {
+                        console.error('Failed to parse geometry:', e);
+                    }
                 });
+                const colorSetup = createColorSetup(SETUP.chartParams[slice_id], validData, SETUP.colTypes[slice_id], SETUP.colNames[slice_id]);
+                SETUP.colSetup[slice_id] = colorSetup;
                 if (fd.viz_type == "leaflet_polygon") {
-                    layers.push(polygonJson(fd, data, geoData, colorSetup));
+                    layers.push(polygonJson(fd, validData, validGeo, colorSetup));
                 }
                 else if (fd.viz_type == "leaflet_linestring") {
-                    layers.push(linestringJson(fd, data, geoData, colorSetup));
+                    layers.push(linestringJson(fd, validData, validGeo, colorSetup));
                 }
                 else {
-                    layers.push(pointJson(fd, data, geoData, colorSetup));
+                    layers.push(pointJson(fd, validData, validGeo, colorSetup));
                 }
             }
         });

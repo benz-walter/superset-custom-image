@@ -48,7 +48,10 @@ export const renderGeoJSON = (
     }
 
     return geo.map((feature, index) => {
-        const {coordinates} = feature.geometry;
+        const coordinates = feature?.geometry ? feature.geometry.coordinates : feature?.coordinates;
+        if (!coordinates || coordinates.length < 2) {
+            return null;
+        }
         if (fd.markerIconUrl && fd.iconUrlColumn && fd.iconUrlColumn.length > 0) {
             const markerIcon = new L.Icon({
                 iconUrl: (data[index]?.[fd.iconUrlColumn as string] as string) || 'data/black-placeholder-variant.png',
@@ -96,20 +99,35 @@ function MapWithGeoJSON(props: SupersetPluginChartLeafletProps) {
     const colNames = payload?.[0]?.colnames || [];
 
     useEffect(() => {
-        let tempData = data.map((d) => {
-            const geom = d[formData['geometry'] as string];
-            return typeof geom === 'string' ? JSON.parse(geom) : geom;
+        const validGeo: GeoJSONFeature[] = [];
+        const validData: TimeseriesDataRecord[] = [];
+
+        data?.forEach((d) => {
+            if (!d) return;
+            const geomRaw = d[formData['geometry'] as string];
+            if (geomRaw === null || geomRaw === undefined) return;
+            try {
+                const geom = typeof geomRaw === 'string' ? JSON.parse(geomRaw) : geomRaw;
+                const coords = geom?.geometry ? geom.geometry.coordinates : geom?.coordinates;
+                if (geom && coords && coords.length >= 2) {
+                    validGeo.push(geom);
+                    validData.push(d);
+                }
+            } catch (e) {
+                console.error('Failed to parse geometry:', e);
+            }
         });
-        tempData = tempData.filter(element => element !== null);
-        let tempFilteredData = data.filter(element => element !== null);
-        setFilteredData(tempFilteredData)
-        setGeoData(tempData);
+
+        setFilteredData(validData);
+        setGeoData(validGeo);
     }, [data, formData]);
 
     useEffect(() => {
-        let tempColorSetup = createColorSetup(formData, data, colTypes, colNames)
-        setColorSetup(tempColorSetup)
-    }, [data, formData]);
+        if (filteredData) {
+            let tempColorSetup = createColorSetup(formData, filteredData, colTypes, colNames);
+            setColorSetup(tempColorSetup);
+        }
+    }, [filteredData, formData]);
 
 
     return (
