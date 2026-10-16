@@ -56,20 +56,34 @@ function MapWithGeoJSON(props: SupersetPluginChartLeafletProps) {
     const colNames = payload?.[0]?.colnames || [];
 
     useEffect(() => {
-        let tempData = data.map((d) => {
-            const geom = d[formData['geometry'] as string];
-            return typeof geom === 'string' ? JSON.parse(geom) : geom;
+        const validGeo: GeoJSONFeature[] = [];
+        const validData: TimeseriesDataRecord[] = [];
+
+        data?.forEach((d) => {
+            if (!d) return;
+            const geomRaw = d[formData['geometry'] as string];
+            if (geomRaw === null || geomRaw === undefined) return;
+            try {
+                const geom = typeof geomRaw === 'string' ? JSON.parse(geomRaw) : geomRaw;
+                if (geom) {
+                    validGeo.push(geom);
+                    validData.push(d);
+                }
+            } catch (e) {
+                console.error('Failed to parse geometry:', e);
+            }
         });
-        tempData = tempData.filter(element => element !== null);
-        let tempFilteredData = data.filter(element => element !== null);
-        setFilteredData(tempFilteredData)
-        setGeoData(tempData);
+
+        setFilteredData(validData);
+        setGeoData(validGeo);
     }, [data, formData]);
 
     useEffect(() => {
-        let tempColorSetup = createColorSetup(formData, data, colTypes, colNames)
-        setColorSetup(tempColorSetup)
-    }, [data, formData]);
+        if (filteredData) {
+            let tempColorSetup = createColorSetup(formData, filteredData, colTypes, colNames);
+            setColorSetup(tempColorSetup);
+        }
+    }, [filteredData, formData]);
 
     return (
         <Styles>
