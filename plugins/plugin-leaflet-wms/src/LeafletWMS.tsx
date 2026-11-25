@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {SupersetPluginChartLeafletWMSProps, SupersetPluginChartLeafletWMSStylesProps} from './types';
 import {styled} from '@apache-superset/core/theme';
-import {MapContainer, Popup, TileLayer, useMapEvents, WMSTileLayer} from "react-leaflet";
+import {MapContainer, Popup, TileLayer, useMap, useMapEvents, WMSTileLayer} from "react-leaflet";
 
 import L from 'leaflet';
 import {formatFeatureInfoResponse} from "./transformXML";
@@ -194,6 +194,40 @@ interface FeatureInfo {
     latlng: L.LatLng;
 }
 
+/**
+ * Beobachtet die Größe des Karten-Containers und ruft bei Änderungen
+ * map.invalidateSize() auf, damit Leaflet die neue Größe übernimmt und
+ * fehlende Kacheln nachlädt (z. B. beim Ändern der Chart-Größe im Dashboard).
+ */
+const ResizeHandler: React.FC = () => {
+    const map = useMap();
+    useEffect(() => {
+        const container = map.getContainer();
+        if (typeof ResizeObserver === 'undefined' || !container) {
+            return undefined;
+        }
+        let frame: number | null = null;
+        const observer = new ResizeObserver(() => {
+            if (frame !== null) {
+                cancelAnimationFrame(frame);
+            }
+            frame = requestAnimationFrame(() => {
+                frame = null;
+                map.invalidateSize();
+            });
+        });
+        observer.observe(container);
+        return () => {
+            if (frame !== null) {
+                cancelAnimationFrame(frame);
+            }
+            observer.disconnect();
+        };
+    }, [map]);
+
+    return null;
+};
+
 // FeatureInfoHandler Komponente
 const FeatureInfoHandler: React.FC<{
     wmsLayers: Array<{
@@ -334,6 +368,7 @@ function LeafletWMSChart(props: SupersetPluginChartLeafletWMSProps) {
                     style={{width: "100%", height: "100%", zIndex: 1}}
                     maxZoom={20}
                 >
+                    <ResizeHandler />
                     {formData.showMap && (
                         <TileLayer url={formData.tileStyle} maxZoom={20}/>
                     )}

@@ -24,6 +24,40 @@ export function ChangeView({ geoData }: { geoData: any }) {
   return null;
 }
 
+/**
+ * Beobachtet die Größe des Karten-Containers und ruft bei Änderungen
+ * map.invalidateSize() auf, damit Leaflet die neue Größe übernimmt und
+ * fehlende Kacheln nachlädt (z. B. beim Ändern der Chart-Größe im Dashboard).
+ */
+export function ResizeHandler() {
+  const map = useMap();
+  useEffect(() => {
+    const container = map.getContainer();
+    if (typeof ResizeObserver === 'undefined' || !container) {
+      return undefined;
+    }
+    let frame: number | null = null;
+    const observer = new ResizeObserver(() => {
+      if (frame !== null) {
+        cancelAnimationFrame(frame);
+      }
+      frame = requestAnimationFrame(() => {
+        frame = null;
+        map.invalidateSize();
+      });
+    });
+    observer.observe(container);
+    return () => {
+      if (frame !== null) {
+        cancelAnimationFrame(frame);
+      }
+      observer.disconnect();
+    };
+  }, [map]);
+
+  return null;
+}
+
 export function rgbToHex(red: number, green: number, blue: number) {
     const rgb = (red << 16) | (green << 8) | (blue << 0);
     return '#' + (0x1000000 + rgb).toString(16).slice(1);
