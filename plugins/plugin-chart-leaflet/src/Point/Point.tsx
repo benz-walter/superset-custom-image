@@ -9,6 +9,7 @@ import L from 'leaflet';
 import {Styles} from "../utils/style";
 import {
   ChangeView,
+  ResizeHandler,
   createColorSetup,
   createLegend, createToolTipData,
   getColor,
@@ -136,6 +137,7 @@ function MapWithGeoJSON(props: SupersetPluginChartLeafletProps) {
                 <MapWrapper>
                     <MapContainer ref={mapRef} center={[0, 0]} zoom={10} maxZoom={20}
                                   style={{width: "100%", height: "100%", zIndex: 1}}>
+                        <ResizeHandler />
                         <ChangeView geoData={geoData} />
                         <TileLayer url={formData.tileStyle} maxZoom={20}/>
                         {formData.wmsUrl && (
